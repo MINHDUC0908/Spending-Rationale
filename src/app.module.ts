@@ -17,6 +17,8 @@ import { WalletsModule } from './modules/wallets/wallets.module.js';
 import { CategoriesModule } from './modules/categories/categories.module.js';
 import { TransactionsModule } from './modules/transactions/transactions.module.js';
 import { BudgetsModule } from './modules/budgets/budgets.module.js';
+import { ReceiptsModule } from './modules/receipts/receipts.module.js';
+import { AiIntegrationModule } from './modules/ai-integration/ai-integration.module.js';
 
 @Module({
   imports: [
@@ -38,6 +40,8 @@ import { BudgetsModule } from './modules/budgets/budgets.module.js';
     CategoriesModule,
     TransactionsModule,
     BudgetsModule,
+    ReceiptsModule,
+    AiIntegrationModule,
   ],
   providers: [
     // Đăng ký ThrottlerGuard toàn cục — mọi route đều bị giới hạn theo cấu hình

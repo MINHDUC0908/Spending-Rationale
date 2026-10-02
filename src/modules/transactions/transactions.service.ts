@@ -4,7 +4,7 @@ import {
     ForbiddenException,
     BadRequestException,
 } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { TransactionsRepository } from './transactions.repository.js';
 import { CreateTransactionDto } from './dto/create.transaction.js';
 import { Transaction } from './entities/transaction.entity.js';
@@ -24,14 +24,11 @@ export class TransactionsService {
     async create (
         userId: string,
         dto: CreateTransactionDto,
+        externalManager?: EntityManager,
     ): Promise<Transaction> {
-        const queryRunner = this.dataSource.createQueryRunner();
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
-
-        try {
+        const execute = async (manager: EntityManager) => {
             // Kiểm tra wallet và khoá dòng với Pessimistic Write Lock để chống Race Condition (Lost Update)
-            const wallet = await queryRunner.manager.findOne(Wallet, {
+            const wallet = await manager.findOne(Wallet, {
                 where: { id: dto.walletId },
                 lock: { mode: 'pessimistic_write' },
             });
@@ -41,7 +38,7 @@ export class TransactionsService {
             }
 
             // Kiểm tra category hợp lệ (mặc định hoặc của chính user)
-            const category = await queryRunner.manager.findOne(Category, {
+            const category = await manager.findOne(Category, {
                 where: { id: dto.categoryId },
             });
 
@@ -56,20 +53,32 @@ export class TransactionsService {
             }
 
             // Tạo transaction
-            const transaction = queryRunner.manager.create(Transaction, {
+            const transaction = manager.create(Transaction, {
                 ...dto,
                 userId,
             });
-            await queryRunner.manager.save(transaction);
+            await manager.save(transaction);
 
             // Cập nhật balance: expense trừ, income cộng
             const delta =
                 dto.type === 'expense' ? -dto.amount : dto.amount;
             wallet.balance = Number(wallet.balance) + delta;
-            await queryRunner.manager.save(wallet);
+            await manager.save(wallet);
 
+            return transaction;
+        };
+
+        if (externalManager) {
+            return execute(externalManager);
+        }
+
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            const transaction = await execute(queryRunner.manager);
             await queryRunner.commitTransaction();
-
             return transaction;
         } catch (error) {
             await queryRunner.rollbackTransaction();

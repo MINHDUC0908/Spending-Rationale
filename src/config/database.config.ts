@@ -5,6 +5,8 @@ import { Wallet } from '../modules/wallets/entities/wallet.entity.js';
 import { Category } from '../modules/categories/entities/category.entity.js';
 import { Transaction } from '../modules/transactions/entities/transaction.entity.js';
 import { Budget } from '../modules/budgets/entities/budget.entity.js';
+import { Receipt } from '../modules/receipts/entities/receipts.entity.js';
+import { TransactionAiMeta } from '../modules/receipts/entities/transaction-ai-meta.entity.js';
 
 export default registerAs(
     'database',
@@ -16,7 +18,7 @@ export default registerAs(
         password: process.env.DB_PASSWORD,
         database: process.env.DB_DATABASE,
 
-        entities: [User, Wallet, Category, Transaction, Budget], 
+        entities: [User, Wallet, Category, Transaction, Budget, Receipt, TransactionAiMeta],
 
         synchronize: process.env.NODE_ENV !== 'production',
         logging: process.env.NODE_ENV === 'development',

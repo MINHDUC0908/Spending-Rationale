@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { WalletsService } from './wallets.service.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
-import { CreateWalletDto } from './dto/CreateWalletDto.js';
+import { CreateWalletDto } from './dto/create.wallet.dto.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
-import { UpdateWalletDto } from './dto/UpdateWalletDto.js';
+import { UpdateWalletDto } from './dto/update.wallet.dto.js';
 import type { AuthenticatedUser } from '../auth/decorators/current-user.decorator.js';
 
 @UseGuards(JwtAuthGuard)
