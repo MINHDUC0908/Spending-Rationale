@@ -33,4 +33,9 @@ export const validationSchema = Joi.object({
   S3_REGION: Joi.string().optional(),
   S3_ACCESS_KEY: Joi.string().optional(),
   S3_SECRET_KEY: Joi.string().optional(),
+
+  // Cloudinary - upload ảnh hóa đơn lên cloud (thay thế lưu local)
+  CLOUDINARY_CLOUD_NAME: Joi.string().allow('').optional(),
+  CLOUDINARY_API_KEY: Joi.string().allow('').optional(),
+  CLOUDINARY_API_SECRET: Joi.string().allow('').optional(),
 });

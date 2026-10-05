@@ -4,7 +4,6 @@ import {
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import {
@@ -27,18 +26,12 @@ export class ReceiptsService {
         private readonly aiIntegrationService: AiIntegrationService,
         private readonly categoriesService: CategoriesService,
         private readonly transactionsService: TransactionsService,
-        private readonly configService: ConfigService,
         private readonly dataSource: DataSource,
     ) { }
 
-    // Bước 1: user upload ảnh -> AI đọc -> trả bản nháp để user xem/sửa
-    async scan(userId: string, filename: string) {
-        // FastAPI cần tải được ảnh qua URL này (cùng máy thì localhost là đủ)
-        const publicUrl =
-            this.configService.get<string>('APP_PUBLIC_URL') ??
-            `http://localhost:${this.configService.get('app.port')}`;
-        const imageUrl = `${publicUrl}/uploads/${filename}`;
-
+    // Bước 1: user upload ảnh -> Cloudinary -> AI đọc -> trả bản nháp để user xem/sửa
+    // imageUrl: URL HTTPS từ Cloudinary (đã upload trước khi gọi hàm này)
+    async scan(userId: string, imageUrl: string) {
         const receipt = await this.receiptRepository.save(
             this.receiptRepository.create({ userId, imageUrl, ocrStatus: 'pending' }),
         );
@@ -180,15 +173,8 @@ export class ReceiptsService {
     }
 
     // Tìm category expense của user (mặc định hoặc riêng) khớp tên AI trả về
-    private async matchCategory(userId: string, name: string) {
-        const categories = await this.categoriesService.findAll(userId);
-
-        return (
-            categories.find(
-                (c) =>
-                    c.type === 'expense' &&
-                    c.name.toLowerCase() === name.trim().toLowerCase(),
-            ) ?? null
-        );
+    // Tối ưu: query thảng vào DB thay vì load hết vào memory rồi filter
+    private matchCategory(userId: string, name: string) {
+        return this.categoriesService.findByName(userId, name, 'expense');
     }
 }

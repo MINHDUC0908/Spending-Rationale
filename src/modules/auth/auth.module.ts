@@ -13,11 +13,11 @@ import { JwtStrategy } from './strategies/jwt.strategy.js';
     // PassportModule: Cần thiết để @UseGuards(JwtAuthGuard) hoạt động
     PassportModule.register({ defaultStrategy: 'jwt' }),
 
-    // ThrottlerModule: Rate limiting chống brute-force cho endpoint login
+    // ThrottlerModule: Rate limiting toàn cục rộng rãi (120 req/phút) để app hoạt động mượt mà
     ThrottlerModule.forRoot({
       throttlers: [
         {
-          limit: 10,
+          limit: 120,
           ttl: 60_000,
         },
       ],

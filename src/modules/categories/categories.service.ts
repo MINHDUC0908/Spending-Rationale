@@ -49,6 +49,21 @@ export class CategoriesService {
  
         return category;
     }
+
+    // Tìm category theo tên (case-insensitive) thuộc về user hoặc mặc định
+    // Dùng cho AI matchCategory — query thẾ́ng DB thay vì load hết rồi filter trong memory
+    findByName (userId: string, name: string, type?: 'income' | 'expense'): Promise<Category | null> {
+        const qb = this.categoryRepository
+            .createQueryBuilder('category')
+            .where('(category.isDefault = true OR category.userId = :userId)', { userId })
+            .andWhere('LOWER(category.name) = LOWER(:name)', { name: name.trim() });
+
+        if (type) {
+            qb.andWhere('category.type = :type', { type });
+        }
+
+        return qb.getOne();
+    }
  
     async update (
         userId: string,

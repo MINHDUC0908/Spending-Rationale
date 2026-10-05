@@ -69,34 +69,36 @@ export class BudgetsService {
     }
 
     // Trạng thái ngân sách: đã chi bao nhiêu, còn lại bao nhiêu, có vượt không
+    // Tối ưu: dùng getSpentAmountBulk → 1 query GROUP BY thay vì N query riêng lẻ (N+1)
     async getStatus (userId: string, month: number, year: number) {
         const budgets = await this.budgetsRepository.findAllByUser(userId, month, year);
 
-        const results = await Promise.all(
-            budgets.map(async (budget) => {
-                const spent = await this.budgetsRepository.getSpentAmount(
-                    userId,
-                    budget.categoryId,
-                    month,
-                    year,
-                );
+        if (budgets.length === 0) return [];
 
-                const limit = Number(budget.amountLimit);
-                const remaining = limit - spent;
-                const percentUsed = limit > 0 ? (spent / limit) * 100 : 0;
-
-                return {
-                    categoryId: budget.categoryId,
-                    categoryName: budget.category?.name,
-                    amountLimit: limit,
-                    spent,
-                    remaining,
-                    percentUsed: Math.round(percentUsed * 100) / 100,
-                    isOverBudget: spent > limit,
-                };
-            }),
+        // Lấy hết số tiền đã chi cho tất cả category trong 1 lần query
+        const categoryIds = budgets.map((b) => b.categoryId);
+        const spentMap = await this.budgetsRepository.getSpentAmountBulk(
+            userId,
+            categoryIds,
+            month,
+            year,
         );
 
-        return results;
+        return budgets.map((budget) => {
+            const spent = spentMap[budget.categoryId] ?? 0;
+            const limit = Number(budget.amountLimit);
+            const remaining = limit - spent;
+            const percentUsed = limit > 0 ? (spent / limit) * 100 : 0;
+
+            return {
+                categoryId: budget.categoryId,
+                categoryName: budget.category?.name,
+                amountLimit: limit,
+                spent,
+                remaining,
+                percentUsed: Math.round(percentUsed * 100) / 100,
+                isOverBudget: spent > limit,
+            };
+        });
     }
 }

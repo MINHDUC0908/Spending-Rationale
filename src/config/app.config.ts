@@ -27,3 +27,10 @@ export const s3Config = registerAs('s3', () => ({
   accessKey: process.env.S3_ACCESS_KEY,
   secretKey: process.env.S3_SECRET_KEY,
 }));
+
+// Config upload ảnh hóa đơn lên Cloudinary (thay thế lưu file local)
+export const cloudinaryConfig = registerAs('cloudinary', () => ({
+  cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+  apiKey:    process.env.CLOUDINARY_API_KEY,
+  apiSecret: process.env.CLOUDINARY_API_SECRET,
+}));

@@ -6,6 +6,7 @@ import {
     JoinColumn,
     CreateDateColumn,
     UpdateDateColumn,
+    Index,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity.js';
 
@@ -24,6 +25,7 @@ export class Wallet {
     currency: string;
 
     // Quan hệ với User - 1 user có nhiều ví
+    @Index() // Tối ưu query WHERE userId = ? khi lấy danh sách ví
     @Column()
     userId: string;
 

@@ -8,6 +8,7 @@ import appConfig, {
   jwtConfig,
   redisConfig,
   s3Config,
+  cloudinaryConfig,
 } from './config/app.config.js';
 import databaseConfig from './config/database.config.js';
 import { validationSchema } from './config/validation.schema.js';
@@ -24,7 +25,7 @@ import { AiIntegrationModule } from './modules/ai-integration/ai-integration.mod
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, jwtConfig, redisConfig, aiServiceConfig, s3Config],
+      load: [appConfig, databaseConfig, jwtConfig, redisConfig, aiServiceConfig, s3Config, cloudinaryConfig],
       validationSchema, // import trực tiếp, không dùng require()
     }),
 
